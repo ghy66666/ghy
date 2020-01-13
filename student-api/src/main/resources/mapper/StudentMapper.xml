@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 为这个mapper指定一个唯一的namespace，namespace的值习惯上设置成包名+sql映射文件名，这样就能够保证namespace的值是唯一的
+	例如namespace="com.szh.mapper.personMapper"就是com.szh.mapper(包名)+personMapper(personMapper.xml文件去除后缀) -->
+<mapper namespace="com.fh.mapper.StudentMapper">
+
+    <sql id="whereSql">
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%',#{name},'%')
+            </if>
+            <if test="sex != null">
+                and sex = #{sex}
+            </if>
+            <if test="areaId != null and areaId != -1">
+                and areaId = #{areaId}
+            </if>
+            <if test="gradeId != null and gradeId != -1">
+                and gradeId = #{gradeId}
+            </if>
+
+            <if test="minAge != null">
+                <![CDATA[
+              and age >= #{minAge}
+              ]]>
+            </if>
+            <if test="maxAge != null">
+                <![CDATA[
+            and age <= #{maxAge}
+            ]]>
+            </if>
+
+            <if test="minWeight != null">
+                <![CDATA[
+              and weight >= #{minWeight}
+              ]]>
+            </if>
+            <if test="maxWeight != null">
+                <![CDATA[
+            and weight <= #{maxWeight}
+            ]]>
+            </if>
+
+            <if test="minBirthday != null">
+                <![CDATA[
+              and birthday >= #{minBirthday}
+              ]]>
+            </if>
+            <if test="maxBirthday != null">
+                <![CDATA[
+            and birthday <= #{maxBirthday}
+            ]]>
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="queryStudent" resultType="student" parameterType="studentQuery">
+        select ts.*,tda.areaName 'areaName',tdg.gradeName 'gradeName' from t_student ts
+        left join t_studentArea tda on ts.areaId = tda.areaId
+        left join t_studentGrade tdg on ts.gradeId = tdg.gradeId
+        <include refid="whereSql"></include>
+        limit #{start},#{length}
+    </select>
+
+    <select id="queryStudentCount" resultType="long" parameterType="studentQuery">
+        select count(*) from t_student
+        <include refid="whereSql"></include>
+    </select>
+
+    <insert id="addStudent" parameterType="student" useGeneratedKeys="true" keyProperty="id">
+        insert into t_student(name,age,weight,areaId,gradeId,sex,posterPath,hobby,birthday,createDate)
+                            values(
+        #{name},#{age},#{weight},#{areaId},#{gradeId},#{sex},#{posterPath},#{hobby},#{birthday},#{createDate}
+                            )
+    </insert>
+
+
+    <select id="getStudentById" parameterType="int" resultType="student">
+        select * from t_student where id = #{id}
+    </select>
+
+
+
+    <delete id="deleteStudent" parameterType="int">
+        delete from t_student where id = #{id}
+    </delete>
+
+
+    <update id="updateStudent" parameterType="student">
+        update t_student set
+          name=#{name},age=#{age},weight=#{weight},areaId=#{areaId},gradeId=#{gradeId},sex=#{sex},posterPath=#{posterPath},hobby=#{hobby},birthday=#{birthday},updateDate=#{updateDate}
+          where id = #{id}
+    </update>
+
+
+    <select id="queryStudentListByIds" parameterType="java.util.List" resultType="student">
+        select * from t_student where id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <delete id="deleteStudentAll" parameterType="java.util.List">
+        delete from t_student where id in
+        <foreach collection="list" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+    
+
+</mapper>
